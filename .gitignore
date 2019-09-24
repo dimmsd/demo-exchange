@@ -1,0 +1,12 @@
+vendor
+.idea
+node_modules
+/storage/*.key
+Homestead.json
+Homestead.yaml
+.env
+.env.*
+.ide.helper.php
+.phpstorm.meta.php
+.php_cs.cache
+*npm-debug.log*
