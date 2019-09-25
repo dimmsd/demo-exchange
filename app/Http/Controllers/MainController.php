@@ -17,6 +17,7 @@ class MainController extends Controller
      */
     public function index(Request $request)
     {
+        // для прода было бы логично убрать vue в компонент
         $user = \Auth::user();
         $orders = (!empty($user)) ? $orders = Order::where('user_id', $user->id)->orderBy('created_at', 'DESC')->take(5)->get() : [];
         $currencies = Currency::all()->toArray();

@@ -13,8 +13,19 @@ class Sbr
 
     protected $data = [];
 
-    private function parse_list($content) {
+    private function load_xml($content) {
+        $use_errors = libxml_use_internal_errors(true);
         $xml = simplexml_load_string($content);
+        if (false === $xml) {
+            throw new Exception("Не могу загрузить xml");
+        }
+        libxml_clear_errors();
+        libxml_use_internal_errors($use_errors);
+        return $xml;
+    }
+
+    private function parse_list($content) {
+        $xml = $this->load_xml($content);
         $data = json_decode(json_encode($xml), TRUE);
         if (!isset($data['Item']) || !is_array($data['Item'])) {
             return false;
@@ -32,7 +43,7 @@ class Sbr
     }
 
     private function parse_item($content) {
-        $xml = simplexml_load_string($content);
+        $xml = $this->load_xml($content);
         $data = json_decode(json_encode($xml), TRUE);
         if (!isset($data['Record']) || !is_array($data['Record'])) {
             return false;
@@ -46,7 +57,7 @@ class Sbr
         $options = ['allow_redirects' => ['max' => 5]];
         $response = $client->request('GET', $this->url_currency_list, $options);
         if ($response->getStatusCode() !== 200) {
-            return false;
+            throw new Exception("Ошибка обращения к серверу статус " . $response->getStatusCode());
         }
         $content = $response->getBody()->getContents();
         return ($this->parse_list($content)) ? $this->data : false;
@@ -59,7 +70,7 @@ class Sbr
         $options = ['allow_redirects' => ['max' => 5]];
         $response = $client->request('GET', $url, $options);
         if ($response->getStatusCode() !== 200) {
-            return false;
+            throw new Exception("Ошибка обращения к серверу статус " . $response->getStatusCode());
         }
         $content = $response->getBody()->getContents();
         return $this->parse_item($content);

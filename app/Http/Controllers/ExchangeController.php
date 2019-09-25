@@ -40,41 +40,46 @@ class ExchangeController extends Controller
     }
 
     protected function calc_rate($amount) {
-        $sbr = new Sbr();
-        // Данные обновляются 1 раз в день?
+        try {
+            $sbr = new Sbr();
+            // Данные обновляются 1 раз в день?
 
-        $rate_from = CurrencyHistory::where(['currency_code' => $this->from_currency->code, 'request_at' => Carbon::now()])->first();
-        if (!empty($rate_from)) {
-            $this->rate_from_value = $rate_from->value;
-        } else {
-            $this->rate_from_value = str_replace(',', '.', $sbr->get_currency_rate($this->from_currency->code));
-            if (is_numeric($this->rate_from_value)) {
-                //save history
-                CurrencyHistory::create(['currency_code' => $this->from_currency->code, 'request_at' => Carbon::now(), 'value' => $this->rate_from_value]);
+            $rate_from = CurrencyHistory::where(['currency_code' => $this->from_currency->code, 'request_at' => Carbon::now()])->first();
+            if (!empty($rate_from)) {
+                $this->rate_from_value = $rate_from->value;
             } else {
-                \Log::error(sprintf('Exchange from %s - rate %s', $this->from_currency->code, $this->rate_from_value));
-                $this->error_message = 'Не удалось получить курс.';
-                return false;
+                $this->rate_from_value = str_replace(',', '.', $sbr->get_currency_rate($this->from_currency->code));
+                if (is_numeric($this->rate_from_value)) {
+                    //save history
+                    CurrencyHistory::create(['currency_code' => $this->from_currency->code, 'request_at' => Carbon::now(), 'value' => $this->rate_from_value]);
+                } else {
+                    \Log::error(sprintf('Exchange from %s - rate %s', $this->from_currency->code, $this->rate_from_value));
+                    $this->error_message = 'Не удалось получить курс.';
+                    return false;
+                }
             }
-        }
 
-        $rate_to = CurrencyHistory::where(['currency_code' => $this->to_currency->code, 'request_at' => Carbon::now()])->first();
-        if (!empty($rate_to)) {
-            $this->rate_to_value = $rate_to->value;
-        } else {
-            $this->rate_to_value = str_replace(',', '.', $sbr->get_currency_rate($this->to_currency->code));
-            if (is_numeric($this->rate_to_value)) {
-                //save history
-                CurrencyHistory::create(['currency_code' => $this->to_currency->code, 'request_at' => Carbon::now(), 'value' => $this->rate_to_value]);
+            $rate_to = CurrencyHistory::where(['currency_code' => $this->to_currency->code, 'request_at' => Carbon::now()])->first();
+            if (!empty($rate_to)) {
+                $this->rate_to_value = $rate_to->value;
             } else {
-                \Log::error(sprintf('Exchange to %s - rate %s', $this->to_currency->code, $this->rate_to_value));
-                $this->error_message = 'Не удалось получить курс.';
-                return false;
+                $this->rate_to_value = str_replace(',', '.', $sbr->get_currency_rate($this->to_currency->code));
+                if (is_numeric($this->rate_to_value)) {
+                    //save history
+                    CurrencyHistory::create(['currency_code' => $this->to_currency->code, 'request_at' => Carbon::now(), 'value' => $this->rate_to_value]);
+                } else {
+                    \Log::error(sprintf('Exchange to %s - rate %s', $this->to_currency->code, $this->rate_to_value));
+                    $this->error_message = 'Не удалось получить курс.';
+                    return false;
+                }
             }
+            //\Log::debug(sprintf('From %s | %s',$this->rate_from_value, $this->from_currency->nominal));
+            //\Log::debug(sprintf('To %s | %s',$this->rate_to_value, $this->to_currency->nominal));
+            $result = ($amount * $this->rate_from_value * $this->to_currency->nominal) / ($this->rate_to_value * $this->from_currency->nominal);
+        } catch (Exception $e) {
+            $this->error_message = $e->getMessage();
+            return false;
         }
-        //\Log::info(sprintf('From %s | %s',$this->rate_from_value, $this->from_currency->nominal));
-        //\Log::info(sprintf('To %s | %s',$this->rate_to_value, $this->to_currency->nominal));
-        $result = ($amount * $this->rate_from_value * $this->from_currency->nominal) / ($this->rate_to_value * $this->to_currency->nominal);
         // Ну как вариант....
         return round($result);
     }
@@ -117,6 +122,7 @@ class ExchangeController extends Controller
         $conv_from = $request->input('from');
         $conv_to = $request->input('to');
         $amount = $request->input('amount');
+        // Вообще валидацию можно сделать и через FormRequest, но вместо одного метода будет целый класс...
         if ($this->check($amount, $conv_from, $conv_to) === false) {
             return response()->json(['status' => 'Ok', 'msg' => $this->error_message], 200);
         }
