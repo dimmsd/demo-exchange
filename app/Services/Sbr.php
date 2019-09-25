@@ -43,7 +43,8 @@ class Sbr
 
     public function get_currency_list() {
         $client = new Client();
-        $response = $client->request('GET', $this->url_currency_list);
+        $options = ['allow_redirects' => ['max' => 5]];
+        $response = $client->request('GET', $this->url_currency_list, $options);
         if ($response->getStatusCode() !== 200) {
             return false;
         }
@@ -55,7 +56,8 @@ class Sbr
         $client = new Client();
         $date =  Carbon::now()->format('d/m/Y');
         $url = sprintf($this->url_currency_rate, $date, $date, $code);
-        $response = $client->request('GET', $url);
+        $options = ['allow_redirects' => ['max' => 5]];
+        $response = $client->request('GET', $url, $options);
         if ($response->getStatusCode() !== 200) {
             return false;
         }
