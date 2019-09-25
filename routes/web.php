@@ -14,3 +14,11 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/', ['uses' => 'MainController@index', 'as' => 'main']);
+Route::get('/convert', 'ExchangeController@convert')->name('exchange.convert');
+Route::get('/order', 'ExchangeController@order')->name('exchange.order');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');

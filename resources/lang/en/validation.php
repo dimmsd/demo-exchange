@@ -12,6 +12,8 @@ return [
     | as the size rules. Feel free to tweak each of these messages here.
     |
     */
+    'custom_user_password' => 'Field :attribute must be string at least 8 characters.',
+    'change-mail-validation-code' => 'Validation code is incorrect.',
 
     'accepted'             => 'The :attribute must be accepted.',
     'active_url'           => 'The :attribute is not a valid URL.',
