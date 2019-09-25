@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\CurrencyHistory;
 use Illuminate\Http\Request;
 use App\Services\Sbr;
+use App\Jobs\SendEmail;
 
 class ExchangeController extends Controller
 {
@@ -145,7 +146,8 @@ class ExchangeController extends Controller
             'value_from' => $this->rate_from_value,
             'value_to' => $this->rate_to_value
         ]);
-        // Отправка почты в очередь
+        // Отправка почты менеджеру в очередь
+        $this->dispatch(new SendEmail($user->id, $this->from_currency->code, $this->to_currency->code, $amount));
         // Рендерим шаблон с историей
         $orders = Order::where('user_id', $user->id)->orderBy('created_at', 'DESC')->take(5)->get();
         $view = view('modules.order_history', compact('orders'));
