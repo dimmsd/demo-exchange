@@ -146,8 +146,11 @@ class ExchangeController extends Controller
             'value_to' => $this->rate_to_value
         ]);
         // Отправка почты в очередь
-        // Надо отдавать последний ордер? История идет через контроллер...Так что тут она не обновится.
-        return response()->json(['status' => 'OK', 'msg' => $message], 200);
+        // Рендерим шаблон с историей
+        $orders = Order::where('user_id', $user->id)->orderBy('created_at', 'DESC')->take(5)->get();
+        $view = view('modules.order_history', compact('orders'));
+        $history = $view->render();
+        return response()->json(['status' => 'OK', 'msg' => $message, 'history' => $history], 200);
     }
 
 }
