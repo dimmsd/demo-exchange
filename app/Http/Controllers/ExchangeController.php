@@ -76,7 +76,7 @@ class ExchangeController extends Controller
             //\Log::debug(sprintf('From %s | %s',$this->rate_from_value, $this->from_currency->nominal));
             //\Log::debug(sprintf('To %s | %s',$this->rate_to_value, $this->to_currency->nominal));
             $result = ($amount * $this->rate_from_value * $this->to_currency->nominal) / ($this->rate_to_value * $this->from_currency->nominal);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->error_message = $e->getMessage();
             return false;
         }

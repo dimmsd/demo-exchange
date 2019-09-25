@@ -57,7 +57,7 @@ class Sbr
         $options = ['allow_redirects' => ['max' => 5]];
         $response = $client->request('GET', $this->url_currency_list, $options);
         if ($response->getStatusCode() !== 200) {
-            throw new Exception("Ошибка обращения к серверу статус " . $response->getStatusCode());
+            throw new \Exception("Ошибка обращения к серверу статус " . $response->getStatusCode());
         }
         $content = $response->getBody()->getContents();
         return ($this->parse_list($content)) ? $this->data : false;
@@ -68,9 +68,10 @@ class Sbr
         $date =  Carbon::now()->format('d/m/Y');
         $url = sprintf($this->url_currency_rate, $date, $date, $code);
         $options = ['allow_redirects' => ['max' => 5]];
+        //$client->setMaxRedirects(5);
         $response = $client->request('GET', $url, $options);
         if ($response->getStatusCode() !== 200) {
-            throw new Exception("Ошибка обращения к серверу статус " . $response->getStatusCode());
+            throw new \Exception("Ошибка обращения к серверу статус " . $response->getStatusCode());
         }
         $content = $response->getBody()->getContents();
         return $this->parse_item($content);
