@@ -5,7 +5,6 @@ node_modules
 Homestead.json
 Homestead.yaml
 .env
-.env.*
 .ide.helper.php
 .phpstorm.meta.php
 .php_cs.cache
